@@ -1,0 +1,10 @@
+@use 'helpers' as *;
+
+.svg-icon * {
+  fill: currentColor;
+  stroke: currentColor;
+}
+
+.visually-hidden {
+  @include visually-hidden;
+}
