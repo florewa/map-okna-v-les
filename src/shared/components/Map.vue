@@ -71,35 +71,104 @@ interface GraphEdge {
 
 // Узлы графа — ключевые перекрестки и изгибы дорог (масштаб 370x419)
 const GRAPH_NODES: GraphNode[] = [
-  // --- Основные дороги и перекрестки ---
+  // --- Основная дорога (Парковка -> Ресепшен -> Кольцо) ---
   { id: 'parking', x: 311, y: 282 },
-  { id: 'junc_rec', x: 227, y: 282 }, // Перекресток у ресепшена
-  { id: 'loop_split_r', x: 206, y: 282 }, // Развилка кольца справа
-  { id: 'loop_top', x: 170, y: 265 }, // Верхняя часть кольца
-  { id: 'loop_bot', x: 170, y: 299 }, // Нижняя часть кольца
-  { id: 'loop_split_l', x: 133, y: 282 }, // Развилка кольца слева
-  { id: 'junc_top_r', x: 227, y: 170 }, // Перекресток сверху справа
-  { id: 'junc_top_l', x: 130, y: 170 }, // Перекресток сверху слева
-  { id: 'junc_bot_l', x: 80, y: 282 }, // Дорога влево от кольца
-  { id: 'junc_terrace', x: 49, y: 282 }, // Поворот у террасы вниз
+  { id: 'junc_rec', x: 227, y: 282 },
+  { id: 'loop_split_r', x: 206, y: 282 },
+  { id: 'loop_split_l', x: 134, y: 282 },
 
-  // Дорога к ресторану
-  { id: 'corner_rest_1', x: 51, y: 369 },
-  { id: 'corner_rest_2', x: 79, y: 391 },
+  // Верхняя часть кольца (плавный изгиб)
+  { id: 'loop_t1', x: 136, y: 274 },
+  { id: 'loop_t2', x: 143, y: 267 },
+  { id: 'loop_t3', x: 151, y: 265 },
+  { id: 'loop_t4', x: 189, y: 265 },
+  { id: 'loop_t5', x: 199, y: 269 },
+  { id: 'loop_t6', x: 204, y: 276 },
+
+  // Нижняя часть кольца (плавный изгиб)
+  { id: 'loop_b1', x: 206, y: 288 },
+  { id: 'loop_b_split_br', x: 202, y: 293 }, // Развилка на дома справа внизу
+  { id: 'loop_b3', x: 189, y: 299 },
+  { id: 'loop_b_split_bl', x: 166, y: 299 }, // Развилка на дома слева внизу
+  { id: 'loop_b4', x: 151, y: 299 },
+  { id: 'loop_b5', x: 141, y: 295 },
+  { id: 'loop_b6', x: 134, y: 288 },
+
+  // --- Дорога влево (Терраса, площадки) ---
+  { id: 'junc_z12', x: 110, y: 282 },
+  { id: 'junc_z14', x: 81, y: 282 },
+  { id: 'junc_terrace', x: 49, y: 282 },
+
+  // Вертикали вниз к домам слева
+  { id: 'end_z12', x: 110, y: 294 },
+  { id: 'end_z14', x: 81, y: 272 },
+
+  // Изогнутый спуск к зоне 13
+  { id: 'z13_r1', x: 81, y: 288 },
+  { id: 'z13_r2', x: 80, y: 291 },
+  { id: 'z13_r3', x: 78, y: 297 },
+  { id: 'z13_r4', x: 75, y: 302 },
+  { id: 'z13_end', x: 74, y: 304 },
+
+  // --- Длинный извилистый спуск к ресторану ---
+  { id: 'rest_c1', x: 48, y: 295 },
+  { id: 'rest_c2', x: 48, y: 319 },
+  { id: 'rest_c3', x: 48, y: 333 },
+  { id: 'rest_c4', x: 48, y: 349 },
+  { id: 'rest_c5', x: 49, y: 354 },
+  { id: 'rest_c6', x: 51, y: 369 },
+  { id: 'rest_c7', x: 53, y: 377 },
+  { id: 'rest_c8', x: 56, y: 392 },
+  { id: 'rest_c9', x: 79, y: 391 },
   { id: 'end_rest', x: 137, y: 390 },
 
-  // Дорога к пруду
-  { id: 'start_pond', x: 123, y: 170 },
-  { id: 'junc_pond', x: 76, y: 131 },
+  // --- Вертикаль вверх от Ресепшена ---
+  { id: 'up_1', x: 228, y: 248 },
+  { id: 'end_z5', x: 206, y: 248 },
+  { id: 'up_2', x: 228, y: 218 },
+  { id: 'end_z4', x: 213, y: 218 },
+  { id: 'up_3', x: 227, y: 188 },
+  { id: 'end_z3', x: 217, y: 188 },
+  { id: 'up_4', x: 226, y: 181 },
+  { id: 'up_5', x: 226, y: 176 },
+  { id: 'junc_top_r', x: 215, y: 170 },
+
+  // --- Дорога сверху (вправо и влево) ---
+  { id: 'top_r1', x: 241, y: 171 },
+  { id: 'top_r2', x: 270, y: 172 },
+  { id: 'top_r3', x: 283, y: 174 },
+  { id: 'top_r4', x: 299, y: 179 },
+
+  { id: 'top_l1', x: 188, y: 170 },
+  { id: 'top_l2', x: 174, y: 170 },
+  { id: 'top_l3', x: 160, y: 170 },
+  { id: 'top_l4', x: 145, y: 170 },
+  { id: 'junc_top_l', x: 130, y: 170 },
+
+  // --- Дорога к Пруду (изгиб) ---
+  { id: 'pond_1', x: 124, y: 170 },
+  { id: 'pond_2', x: 102, y: 164 },
+  { id: 'pond_3', x: 81, y: 159 },
+  { id: 'pond_4', x: 74, y: 140 },
+  { id: 'pond_5', x: 77, y: 131 },
   { id: 'end_pond', x: 85, y: 90 },
 
-  // Верхняя дорога и дома справа
-  { id: 'top_right_end', x: 283, y: 174 },
-  { id: 'top_houses', x: 188, y: 169 },
-  { id: 'v_right_mid', x: 224, y: 340 },
-  { id: 'v_right_bot', x: 224, y: 373 },
+  // --- Нижняя правая дорога (зоны 6,7,8) ---
+  { id: 'br_c1', x: 215, y: 305 },
+  { id: 'br_c2', x: 223, y: 318 },
+  { id: 'br_1', x: 225, y: 321 },
+  { id: 'br_2', x: 225, y: 354 },
+  { id: 'br_3', x: 225, y: 373 },
 
-  // --- Координаты самих зон (точки старта/финиша) ---
+  // --- Нижняя левая дорога (зоны 9,10,11) ---
+  { id: 'bl_c1', x: 160, y: 306 },
+  { id: 'bl_c2', x: 147, y: 318 },
+  { id: 'bl_c3', x: 134, y: 331 },
+  { id: 'bl_c4', x: 134, y: 348 },
+  { id: 'bl_c5', x: 135, y: 357 },
+  { id: 'bl_1', x: 137, y: 373 },
+
+  // --- Точные координаты зон (поинтов), чтобы маршрут заходил внутрь домиков ---
   { id: 'z_parking', x: 336, y: 282 },
   { id: 'z_reception', x: 254, y: 296 },
   { id: 'z_restaurant', x: 137, y: 409 },
@@ -138,77 +207,146 @@ const GRAPH_NODES: GraphNode[] = [
   { id: 'z_28', x: 283, y: 194 },
 ];
 
-// Рёбра графа — соединения между узлами
+// Рёбра графа — соединения точек (восстановлены прямо из SVG пути)
 const GRAPH_EDGES: GraphEdge[] = [
-  // Основные дороги
+  // Въезд
   { from: 'parking', to: 'junc_rec' },
   { from: 'junc_rec', to: 'loop_split_r' },
-  { from: 'loop_split_r', to: 'loop_top' },
-  { from: 'loop_split_r', to: 'loop_bot' },
-  { from: 'loop_top', to: 'loop_split_l' },
-  { from: 'loop_bot', to: 'loop_split_l' },
-  { from: 'loop_split_l', to: 'junc_bot_l' },
-  { from: 'junc_bot_l', to: 'junc_terrace' },
 
-  // Дорога к ресторану
-  { from: 'junc_terrace', to: 'corner_rest_1' },
-  { from: 'corner_rest_1', to: 'corner_rest_2' },
-  { from: 'corner_rest_2', to: 'end_rest' },
+  // Кольцо: Верх
+  { from: 'loop_split_r', to: 'loop_t6' },
+  { from: 'loop_t6', to: 'loop_t5' },
+  { from: 'loop_t5', to: 'loop_t4' },
+  { from: 'loop_t4', to: 'loop_t3' },
+  { from: 'loop_t3', to: 'loop_t2' },
+  { from: 'loop_t2', to: 'loop_t1' },
+  { from: 'loop_t1', to: 'loop_split_l' },
 
-  // Вертикаль к ресепшену и верхнему ряду
-  { from: 'junc_rec', to: 'junc_top_r' },
+  // Кольцо: Низ
+  { from: 'loop_split_r', to: 'loop_b1' },
+  { from: 'loop_b1', to: 'loop_b_split_br' },
+  { from: 'loop_b_split_br', to: 'loop_b3' },
+  { from: 'loop_b3', to: 'loop_b_split_bl' },
+  { from: 'loop_b_split_bl', to: 'loop_b4' },
+  { from: 'loop_b4', to: 'loop_b5' },
+  { from: 'loop_b5', to: 'loop_b6' },
+  { from: 'loop_b6', to: 'loop_split_l' },
 
-  // Верхняя дорога
-  { from: 'junc_top_r', to: 'top_right_end' },
-  { from: 'junc_top_r', to: 'top_houses' },
-  { from: 'top_houses', to: 'junc_top_l' },
+  // Дорога влево от кольца
+  { from: 'loop_split_l', to: 'junc_z12' },
+  { from: 'junc_z12', to: 'junc_z14' },
+  { from: 'junc_z14', to: 'junc_terrace' },
+
+  // Съезды к 12, 13, 14
+  { from: 'junc_z12', to: 'end_z12' },
+  { from: 'junc_z14', to: 'end_z14' },
+  { from: 'junc_z14', to: 'z13_r1' },
+  { from: 'z13_r1', to: 'z13_r2' },
+  { from: 'z13_r2', to: 'z13_r3' },
+  { from: 'z13_r3', to: 'z13_r4' },
+  { from: 'z13_r4', to: 'z13_end' },
+
+  // Дорога вниз к ресторану (повторяет кривую)
+  { from: 'junc_terrace', to: 'rest_c1' },
+  { from: 'rest_c1', to: 'rest_c2' },
+  { from: 'rest_c2', to: 'rest_c3' },
+  { from: 'rest_c3', to: 'rest_c4' },
+  { from: 'rest_c4', to: 'rest_c5' },
+  { from: 'rest_c5', to: 'rest_c6' },
+  { from: 'rest_c6', to: 'rest_c7' },
+  { from: 'rest_c7', to: 'rest_c8' },
+  { from: 'rest_c8', to: 'rest_c9' },
+  { from: 'rest_c9', to: 'end_rest' },
+
+  // Вертикаль вверх от ресепшена
+  { from: 'junc_rec', to: 'up_1' },
+  { from: 'up_1', to: 'up_2' },
+  { from: 'up_2', to: 'up_3' },
+  { from: 'up_3', to: 'up_4' },
+  { from: 'up_4', to: 'up_5' },
+  { from: 'up_5', to: 'junc_top_r' },
+
+  // Съезды к 3, 4, 5
+  { from: 'up_1', to: 'end_z5' },
+  { from: 'up_2', to: 'end_z4' },
+  { from: 'up_3', to: 'end_z3' },
+
+  // Верхняя дорога вправо
+  { from: 'junc_top_r', to: 'top_r1' },
+  { from: 'top_r1', to: 'top_r2' },
+  { from: 'top_r2', to: 'top_r3' },
+  { from: 'top_r3', to: 'top_r4' },
+
+  // Верхняя дорога влево
+  { from: 'junc_top_r', to: 'top_l1' },
+  { from: 'top_l1', to: 'top_l2' },
+  { from: 'top_l2', to: 'top_l3' },
+  { from: 'top_l3', to: 'top_l4' },
+  { from: 'top_l4', to: 'junc_top_l' },
 
   // Дорога к пруду
-  { from: 'junc_top_l', to: 'start_pond' },
-  { from: 'start_pond', to: 'junc_pond' },
-  { from: 'junc_pond', to: 'end_pond' },
+  { from: 'junc_top_l', to: 'pond_1' },
+  { from: 'pond_1', to: 'pond_2' },
+  { from: 'pond_2', to: 'pond_3' },
+  { from: 'pond_3', to: 'pond_4' },
+  { from: 'pond_4', to: 'pond_5' },
+  { from: 'pond_5', to: 'end_pond' },
 
-  // Дома 6-11 (справа внизу)
-  { from: 'junc_rec', to: 'v_right_mid' },
-  { from: 'v_right_mid', to: 'v_right_bot' },
+  // Правая нижняя дорога (съезд от кольца)
+  { from: 'loop_b_split_br', to: 'br_c1' },
+  { from: 'br_c1', to: 'br_c2' },
+  { from: 'br_c2', to: 'br_1' },
+  { from: 'br_1', to: 'br_2' },
+  { from: 'br_2', to: 'br_3' },
 
-  // --- Привязка зон к дорогам ---
+  // Левая нижняя дорога (съезд от кольца)
+  { from: 'loop_b_split_bl', to: 'bl_c1' },
+  { from: 'bl_c1', to: 'bl_c2' },
+  { from: 'bl_c2', to: 'bl_c3' },
+  { from: 'bl_c3', to: 'bl_c4' },
+  { from: 'bl_c4', to: 'bl_c5' },
+  { from: 'bl_c5', to: 'bl_1' },
+
+  // Нижняя горизонталь (соединяет низ левой и правой части)
+  { from: 'bl_1', to: 'br_3' },
+
+  // --- Соединения центров зон с ближайшей точкой дороги ---
   { from: 'z_parking', to: 'parking' },
   { from: 'z_reception', to: 'junc_rec' },
   { from: 'z_restaurant', to: 'end_rest' },
-  { from: 'z_terrace', to: 'corner_rest_1' },
-  { from: 'z_sport', to: 'junc_terrace' },
+  { from: 'z_terrace', to: 'rest_c3' },
+  { from: 'z_sport', to: 'rest_c2' },
   { from: 'z_playground', to: 'junc_terrace' },
   { from: 'z_pond', to: 'end_pond' },
 
-  { from: 'z_1', to: 'junc_top_r' },
-  { from: 'z_2', to: 'junc_top_r' },
-  { from: 'z_3', to: 'junc_top_r' },
-  { from: 'z_4', to: 'junc_rec' },
-  { from: 'z_5', to: 'loop_split_r' },
-  { from: 'z_6', to: 'v_right_mid' },
-  { from: 'z_7', to: 'v_right_mid' },
-  { from: 'z_8', to: 'v_right_bot' },
-  { from: 'z_9', to: 'v_right_bot' },
-  { from: 'z_10', to: 'v_right_mid' },
-  { from: 'z_11', to: 'v_right_mid' },
-  { from: 'z_12', to: 'junc_bot_l' },
-  { from: 'z_13', to: 'junc_bot_l' },
-  { from: 'z_14', to: 'junc_bot_l' },
+  { from: 'z_1', to: 'top_r1' },
+  { from: 'z_2', to: 'top_r1' },
+  { from: 'z_3', to: 'end_z3' },
+  { from: 'z_4', to: 'end_z4' },
+  { from: 'z_5', to: 'end_z5' },
+  { from: 'z_6', to: 'br_1' },
+  { from: 'z_7', to: 'br_2' },
+  { from: 'z_8', to: 'br_3' },
+  { from: 'z_9', to: 'bl_1' },
+  { from: 'z_10', to: 'bl_c5' },
+  { from: 'z_11', to: 'bl_c3' },
+  { from: 'z_12', to: 'end_z12' },
+  { from: 'z_13', to: 'z13_end' },
+  { from: 'z_14', to: 'end_z14' },
   { from: 'z_15', to: 'loop_split_l' },
-  { from: 'z_16', to: 'junc_top_r' },
-  { from: 'z_17', to: 'top_houses' },
-  { from: 'z_18', to: 'top_houses' },
-  { from: 'z_19', to: 'top_houses' },
-  { from: 'z_20', to: 'junc_top_l' },
-  { from: 'z_21', to: 'junc_pond' },
-  { from: 'z_22', to: 'start_pond' },
+  { from: 'z_16', to: 'top_r1' },
+  { from: 'z_17', to: 'top_l1' },
+  { from: 'z_18', to: 'top_l2' },
+  { from: 'z_19', to: 'top_l3' },
+  { from: 'z_20', to: 'top_l4' },
+  { from: 'z_21', to: 'pond_5' },
+  { from: 'z_22', to: 'pond_1' },
   { from: 'z_23', to: 'junc_top_l' },
-  { from: 'z_24', to: 'top_houses' },
-  { from: 'z_25', to: 'top_houses' },
-  { from: 'z_26', to: 'top_right_end' },
-  { from: 'z_27', to: 'top_right_end' },
-  { from: 'z_28', to: 'top_right_end' },
+  { from: 'z_24', to: 'top_l4' },
+  { from: 'z_25', to: 'top_l2' },
+  { from: 'z_26', to: 'top_r2' },
+  { from: 'z_27', to: 'top_r4' },
+  { from: 'z_28', to: 'top_r3' },
 ];
 
 // Сопоставление id зоны → id узла графа
