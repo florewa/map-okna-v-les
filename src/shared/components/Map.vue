@@ -8,7 +8,7 @@ import {
   watch,
 } from 'vue';
 
-import MapSvg from '@/shared/assets/images/map.svg?component';
+import MapSvg from '@/shared/assets/images/map.svg';
 import MapPin from '@/shared/components/MapPin.vue';
 
 const props = defineProps<{
@@ -520,7 +520,12 @@ const onPointerDown = (e: PointerEvent) => {
   } else if (pointers.size === 2) {
     dragPointerId = null;
     isDragging.value = false;
-    const [a, b] = [...pointers.values()];
+    const pointerValues = [...pointers.values()];
+    const a = pointerValues[0];
+    const b = pointerValues[1];
+
+    if (!a || !b) return;
+
     pinchLastDist = getDistance(a, b);
   }
 };
@@ -530,7 +535,12 @@ const onPointerMove = (e: PointerEvent) => {
   pointers.set(e.pointerId, e);
 
   if (pointers.size === 2) {
-    const [a, b] = [...pointers.values()];
+    const pointerValues = [...pointers.values()];
+    const a = pointerValues[0];
+    const b = pointerValues[1];
+
+    if (!a || !b) return;
+
     const dist = getDistance(a, b);
     const distDelta = dist - pinchLastDist;
     pinchLastDist = dist;
@@ -580,8 +590,15 @@ const onPointerUp = (e: PointerEvent) => {
   }
 
   if (pointers.size === 1) {
-    const [remaining] = [...pointers.values()];
+    const remaining = [...pointers.values()][0];
+
+    if (!remaining) return;
+
     dragPointerId = remaining.pointerId;
+    lastX = remaining.clientX;
+    lastY = remaining.clientY;
+    dragStartX = remaining.clientX;
+    dragStartY = remaining.clientY;
     lastX = remaining.clientX;
     lastY = remaining.clientY;
     dragStartX = remaining.clientX;
