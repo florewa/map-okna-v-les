@@ -1,30 +1,3 @@
-<script setup lang="ts">
-import { onBeforeUnmount, onMounted } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
-
-import { INACTIVITY_TIMEOUT } from '@/shared/consts';
-import { useInactivityStore } from '@/stores/useInactivityStore.ts';
-
-const inactivityStore = useInactivityStore();
-
-const route = useRoute();
-const router = useRouter();
-
-onMounted(() => {
-  inactivityStore.init({
-    timeout: INACTIVITY_TIMEOUT * 1000,
-    ignoredPaths: ['/'],
-    onInactivity: () => {
-      router.push('/');
-    },
-  });
-});
-
-onBeforeUnmount(() => {
-  inactivityStore.destroy();
-});
-</script>
-
 <template>
   <main class="main">
     <RouterView v-slot="{ Component }">
@@ -44,5 +17,11 @@ onBeforeUnmount(() => {
     </RouterView>
   </main>
 </template>
+
+<script setup lang="ts">
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
+</script>
 
 <style scoped></style>

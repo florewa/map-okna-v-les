@@ -1,8 +1,15 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 
 import Legend from '@/shared/components/Legend.vue';
 import Map from '@/shared/components/Map.vue';
+import Modal from '@/shared/components/Modal.vue';
+
+interface ZoneData {
+  title: string;
+  description: string;
+  images: string[];
+}
 
 const mapRef = ref<InstanceType<typeof Map> | null>(null);
 const mapAreaRef = ref<HTMLElement | null>(null);
@@ -18,9 +25,31 @@ const isZoomOutDisabled = computed(
 const zoomIn = () => mapRef.value?.zoomIn();
 const zoomOut = () => mapRef.value?.zoomOut();
 
+const zonesData = ref<Record<string, ZoneData>>({});
+const activeZone = ref<ZoneData | null>(null);
+const activeZoneId = ref<string | null>(null);
+
+onMounted(async () => {
+  const res = await fetch('/data.json');
+  const json = await res.json();
+  zonesData.value = json.zones ?? json;
+});
+
 const handlePointClick = (id: string) => {
-  console.log('Клик по точке:', id);
-  // Логика при клике на прозрачные зоны объектов
+  const zone = zonesData.value[id];
+  if (zone) activeZone.value = zone;
+  activeZoneId.value = id;
+};
+
+const closeModal = () => {
+  activeZone.value = null;
+};
+
+const handleBuildRoute = () => {
+  if (activeZoneId.value) {
+    mapRef.value?.buildRouteTo(activeZoneId.value);
+  }
+  closeModal();
 };
 </script>
 
@@ -30,6 +59,15 @@ const handlePointClick = (id: string) => {
       ref="mapRef"
       :fit-area="mapAreaRef"
       @point-click="handlePointClick"
+    />
+
+    <Modal
+      :visible="!!activeZone"
+      :title="activeZone?.title ?? ''"
+      :description="activeZone?.description ?? ''"
+      :images="activeZone?.images ?? []"
+      @close="closeModal"
+      @route="handleBuildRoute"
     />
 
     <div class="ui">
@@ -87,11 +125,13 @@ const handlePointClick = (id: string) => {
   background-repeat: repeat;
   background-position: center;
   background-size: 400px;
+  user-select: none;
+  -webkit-user-select: none;
 }
 .ui {
   position: fixed;
   inset: 0;
-  z-index: 1;
+  z-index: 2;
   display: flex;
   flex-direction: column;
   pointer-events: none;
@@ -114,6 +154,7 @@ const handlePointClick = (id: string) => {
 .map-area {
   flex: 1;
   min-height: 0;
+  pointer-events: none;
 }
 .bottom-area {
   position: relative;
@@ -122,7 +163,7 @@ const handlePointClick = (id: string) => {
   flex-direction: column;
   align-items: flex-end;
   padding-inline: 16px;
-  padding-bottom: max(16px, env(safe-area-inset-bottom));
+  padding-bottom: 8px;
   pointer-events: none;
 }
 .controls {

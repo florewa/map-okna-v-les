@@ -51,10 +51,10 @@ const legendItems: LegendItem[] = [
 <style scoped lang="scss">
 .legend {
   padding: 8px;
-
   border-radius: 16px;
-
   background: #efedd9;
+  max-width: 1080px;
+  margin: 0 auto;
 }
 
 .legend-list {
@@ -67,27 +67,21 @@ const legendItems: LegendItem[] = [
   display: flex;
   align-items: center;
   gap: 6px;
-
   min-height: 32px;
-
   padding: 4px 8px;
-
   border-radius: 10px;
-
   background: #e6e4c7;
 }
 
 .legend-text {
   margin: 0;
-
-  font-size: 14px;
+  font-size: 12px;
   line-height: 1.2;
 }
 
 .legend-marker,
 .legend-icon {
   flex-shrink: 0;
-
   width: 18px;
   height: 18px;
 }
