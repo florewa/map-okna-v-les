@@ -25,6 +25,7 @@ const MAP_HEIGHT = 419;
 const MAX_SCALE = 4;
 const ZOOM_STEP = 0.4;
 const EDGE_PADDING = 16;
+const MAP_TOP_OFFSET = 6;
 const DRAG_THRESHOLD = 5;
 
 const wrapperRef = ref<HTMLElement | null>(null);
@@ -67,6 +68,7 @@ interface GraphNode {
 interface GraphEdge {
   from: string;
   to: string;
+  costMultiplier?: number;
 }
 
 // Узлы графа — только сами дороги и точные съезды к домам
@@ -123,6 +125,7 @@ const GRAPH_NODES: GraphNode[] = [
   { id: 'top_r2', x: 270.1, y: 171.6 },
   { id: 'top_r3', x: 283.8, y: 174.4 },
   { id: 'top_r4', x: 299.3, y: 179.6 },
+  { id: 'top_r4b', x: 320.5, y: 208.0 },
   { id: 'top_r5', x: 338.5, y: 230.7 },
   { id: 'top_l1', x: 188.3, y: 170.0 },
   { id: 'top_l2', x: 174.2, y: 170.0 },
@@ -145,12 +148,16 @@ const GRAPH_NODES: GraphNode[] = [
 
   // --- Нижняя правая и левая дороги ---
   { id: 'br_c1', x: 202.4, y: 293.0 },
+  { id: 'br_c1b', x: 208.5, y: 298.5 },
   { id: 'br_c2', x: 215.6, y: 305.6 },
+  { id: 'br_c2b', x: 221.5, y: 314.0 },
   { id: 'br_1', x: 224.7, y: 321.4 },
   { id: 'br_2', x: 224.7, y: 354.6 },
   { id: 'br_3', x: 224.7, y: 373.6 },
   { id: 'bl_c1', x: 166.2, y: 299.2 },
+  { id: 'bl_c1b', x: 157.0, y: 308.5 },
   { id: 'bl_c2', x: 147.7, y: 318.8 },
+  { id: 'bl_c2b', x: 140.5, y: 337.5 },
   { id: 'bl_c3', x: 135.3, y: 357.6 },
   { id: 'bl_1', x: 137.0, y: 373.6 },
 
@@ -187,16 +194,16 @@ const GRAPH_NODES: GraphNode[] = [
 ];
 
 const GRAPH_EDGES: GraphEdge[] = [
-  // Кольцо и основа
+  // Кольцо и основа (верхняя дуга чуть дороже → Dijkstra предпочитает нижний путь для левых зон)
   { from: 'parking', to: 'junc_rec' },
   { from: 'junc_rec', to: 'loop_r' },
-  { from: 'loop_r', to: 'loop_rt' },
-  { from: 'loop_rt', to: 'loop_tr' },
-  { from: 'loop_tr', to: 'loop_t_end' },
-  { from: 'loop_t_end', to: 'loop_t_start' },
-  { from: 'loop_t_start', to: 'loop_tl' },
-  { from: 'loop_tl', to: 'loop_lt' },
-  { from: 'loop_lt', to: 'loop_l' },
+  { from: 'loop_r', to: 'loop_rt', costMultiplier: 1.05 },
+  { from: 'loop_rt', to: 'loop_tr', costMultiplier: 1.05 },
+  { from: 'loop_tr', to: 'loop_t_end', costMultiplier: 1.05 },
+  { from: 'loop_t_end', to: 'loop_t_start', costMultiplier: 1.05 },
+  { from: 'loop_t_start', to: 'loop_tl', costMultiplier: 1.05 },
+  { from: 'loop_tl', to: 'loop_lt', costMultiplier: 1.05 },
+  { from: 'loop_lt', to: 'loop_l', costMultiplier: 1.05 },
   { from: 'loop_l', to: 'loop_lb' },
   { from: 'loop_lb', to: 'loop_bl' },
   { from: 'loop_bl', to: 'loop_b_start' },
@@ -237,7 +244,8 @@ const GRAPH_EDGES: GraphEdge[] = [
   { from: 'top_r1', to: 'top_r2' },
   { from: 'top_r2', to: 'top_r3' },
   { from: 'top_r3', to: 'top_r4' },
-  { from: 'top_r4', to: 'top_r5' },
+  { from: 'top_r4', to: 'top_r4b' },
+  { from: 'top_r4b', to: 'top_r5' },
   { from: 'junc_top_r', to: 'top_l1' },
   { from: 'top_l1', to: 'top_l2' },
   { from: 'top_l2', to: 'top_l3' },
@@ -260,15 +268,20 @@ const GRAPH_EDGES: GraphEdge[] = [
 
   // Низы
   { from: 'loop_rb', to: 'br_c1' },
-  { from: 'br_c1', to: 'br_c2' },
-  { from: 'br_c2', to: 'br_1' },
+  { from: 'br_c1', to: 'br_c1b' },
+  { from: 'br_c1b', to: 'br_c2' },
+  { from: 'br_c2', to: 'br_c2b' },
+  { from: 'br_c2b', to: 'br_1' },
   { from: 'br_1', to: 'br_2' },
   { from: 'br_2', to: 'br_3' },
   { from: 'loop_b_start', to: 'bl_c1' },
-  { from: 'bl_c1', to: 'bl_c2' },
-  { from: 'bl_c2', to: 'bl_c3' },
+  { from: 'bl_c1', to: 'bl_c1b' },
+  { from: 'bl_c1b', to: 'bl_c2' },
+  { from: 'bl_c2', to: 'bl_c2b' },
+  { from: 'bl_c2b', to: 'bl_c3' },
   { from: 'bl_c3', to: 'bl_1' },
   { from: 'bl_1', to: 'br_3' },
+  { from: 'bl_1', to: 'end_rest' },
 
   // ==========================================
   // ПРИСОЕДИНЕНИЕ СЪЕЗДОВ К ДОРОГАМ
@@ -343,9 +356,6 @@ const ZONE_TO_NODE: Record<string, string> = {
   'zone-pond': 'end_pond',
 };
 
-// Начальный узел = парковка (где стоит пользователь)
-const USER_NODE_ID = 'parking';
-
 function dist(a: GraphNode, b: GraphNode): number {
   return Math.hypot(a.x - b.x, a.y - b.y);
 }
@@ -361,7 +371,7 @@ function dijkstra(startId: string, endId: string): string[] {
     const a = nodeMap.get(e.from);
     const b = nodeMap.get(e.to);
     if (!a || !b) return;
-    const w = dist(a, b);
+    const w = dist(a, b) * (e.costMultiplier ?? 1);
     adj.get(e.from)!.push({ id: e.to, weight: w });
     adj.get(e.to)!.push({ id: e.from, weight: w });
   });
@@ -421,17 +431,64 @@ function dijkstra(startId: string, endId: string): string[] {
 
 const routePath = ref<{ x: number; y: number }[]>([]);
 
-const routePolylinePoints = computed(() =>
-  routePath.value.map((p) => `${p.x},${p.y}`).join(' '),
-);
+const routeAnimationKey = ref(0);
+
+function catmullRomToPath(points: { x: number; y: number }[]): string {
+  if (points.length < 2) return '';
+
+  const first = points[0]!;
+  const second = points[1]!;
+
+  if (points.length === 2) {
+    return `M ${first.x},${first.y} L ${second.x},${second.y}`;
+  }
+
+  const tension = 0.5;
+  let d = `M ${first.x},${first.y}`;
+
+  for (let i = 0; i < points.length - 1; i++) {
+    const p0 = points[Math.max(0, i - 1)]!;
+    const p1 = points[i]!;
+    const p2 = points[i + 1]!;
+    const p3 = points[Math.min(points.length - 1, i + 2)]!;
+
+    const cp1x = p1.x + ((p2.x - p0.x) * tension) / 3;
+    const cp1y = p1.y + ((p2.y - p0.y) * tension) / 3;
+    const cp2x = p2.x - ((p3.x - p1.x) * tension) / 3;
+    const cp2y = p2.y - ((p3.y - p1.y) * tension) / 3;
+
+    d += ` C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+  }
+
+  return d;
+}
+
+const routePathD = computed(() => catmullRomToPath(routePath.value));
 
 const hasRoute = computed(() => routePath.value.length >= 2);
+
+const getNearestNodeId = (x: number, y: number): string => {
+  let nearestId = GRAPH_NODES[0]!.id;
+  let minDist = Infinity;
+  for (const node of GRAPH_NODES) {
+    const d = Math.hypot(node.x - x, node.y - y);
+    if (d < minDist) {
+      minDist = d;
+      nearestId = node.id;
+    }
+  }
+  return nearestId;
+};
 
 const buildRouteTo = (zoneId: string) => {
   const targetNodeId = ZONE_TO_NODE[zoneId];
   if (!targetNodeId) return;
 
-  const nodeIds = dijkstra(USER_NODE_ID, targetNodeId);
+  const startNodeId = getNearestNodeId(
+    userLocation.value.x,
+    userLocation.value.y,
+  );
+  const nodeIds = dijkstra(startNodeId, targetNodeId);
   if (!nodeIds.length) return;
 
   const nodeMap = new Map<string, GraphNode>();
@@ -441,6 +498,8 @@ const buildRouteTo = (zoneId: string) => {
     .map((id) => nodeMap.get(id))
     .filter((n): n is GraphNode => !!n)
     .map((n) => ({ x: n.x, y: n.y }));
+
+  routeAnimationKey.value++;
 };
 
 /* =========================
@@ -517,9 +576,9 @@ const clampTranslate = (x: number, y: number, currentScale: number) => {
 
   if (scaledHeight >= height) {
     minY = top + height - scaledHeight;
-    maxY = top;
+    maxY = top + MAP_TOP_OFFSET;
   } else {
-    minY = top + (height - scaledHeight) / 2;
+    minY = top + MAP_TOP_OFFSET;
     maxY = minY;
   }
 
@@ -555,6 +614,10 @@ const fitMap = async () => {
   const { x, y } = clampTranslate(0, 0, fittedScale);
   translateX.value = x;
   translateY.value = y;
+
+  // const canvasEl = wrapperRef.value;
+  // const canvasW = canvasEl ? canvasEl.clientWidth : window.innerWidth;
+  // const canvasH = canvasEl ? canvasEl.clientHeight : window.innerHeight;
 };
 
 const zoomTo = (nextScale: number, centerX: number, centerY: number) => {
@@ -576,12 +639,18 @@ const zoomAtCenter = (delta: number) => {
   zoomTo(scale.value + delta, left + width / 2, top + height / 2);
 };
 
+const resetRoute = () => {
+  routePath.value = [];
+};
+
 defineExpose({
   isZoomInDisabled: computed(() => scale.value >= MAX_SCALE),
   isZoomOutDisabled: computed(() => scale.value <= minScale.value),
+  hasRoute,
   zoomIn: () => zoomAtCenter(ZOOM_STEP),
   zoomOut: () => zoomAtCenter(-ZOOM_STEP),
   buildRouteTo,
+  resetRoute,
 });
 
 /* =========================
@@ -733,7 +802,6 @@ onMounted(async () => {
   await fitMap();
   window.addEventListener('resize', fitMap);
 
-  // Авто-маршрут из URL
   const params = new URLSearchParams(window.location.search);
   const zoneId = params.get('zone');
   if (zoneId) {
@@ -765,7 +833,6 @@ onBeforeUnmount(() => {
 });
 
 const logCoords = (e: MouseEvent) => {
-  // Получаем координаты относительно SVG (viewBox 370x419)
   const svg = e.currentTarget as SVGSVGElement;
   const point = svg.createSVGPoint();
   point.x = e.clientX;
@@ -791,6 +858,13 @@ const logCoords = (e: MouseEvent) => {
           transform: `translate(${translateX}px, ${translateY}px) scale(${scale})`,
         }"
       >
+        <img
+          src="/images/pattern.svg"
+          class="map-pattern"
+          aria-hidden="true"
+          alt="map"
+        />
+
         <MapSvg class="map-image" />
 
         <div
@@ -812,9 +886,10 @@ const logCoords = (e: MouseEvent) => {
           @click="logCoords"
         >
           <!-- Маршрут через граф -->
-          <polyline
+          <path
             v-if="hasRoute"
-            :points="routePolylinePoints"
+            :key="routeAnimationKey"
+            :d="routePathD"
             class="navigation-route"
           />
 
@@ -870,6 +945,18 @@ $map-height: 419px;
   touch-action: none;
 }
 
+.map-pattern {
+  position: absolute;
+  left: -16px;
+  top: -148px;
+  width: 402px;
+  height: 974px;
+  max-width: unset;
+  pointer-events: none;
+  user-select: none;
+  z-index: -1;
+}
+
 .map-image {
   display: block;
   width: 100%;
@@ -904,6 +991,15 @@ $map-height: 419px;
   stroke-linecap: round;
   stroke-linejoin: round;
   filter: drop-shadow(0 0 8px rgba(145, 179, 65, 0.6));
+  stroke-dasharray: 3000;
+  stroke-dashoffset: 3000;
+  animation: draw-route 10s ease-out forwards;
+}
+
+@keyframes draw-route {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 .map-hotspot {

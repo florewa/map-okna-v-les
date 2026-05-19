@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 import Legend from '@/shared/components/Legend.vue';
 import Map from '@/shared/components/Map.vue';
@@ -13,6 +13,30 @@ interface ZoneData {
 
 const mapRef = ref<InstanceType<typeof Map> | null>(null);
 const mapAreaRef = ref<HTMLElement | null>(null);
+const legendComp = ref<InstanceType<typeof Legend> | null>(null);
+const legendOpen = ref(false);
+const floatOffset = ref(0);
+
+watch(legendOpen, async (open) => {
+  if (open) {
+    await nextTick();
+    floatOffset.value = (legendComp.value?.legendRef?.offsetHeight ?? 0) + 8;
+  } else {
+    floatOffset.value = 0;
+  }
+});
+
+const floatStyle = computed(() => ({
+  transform: floatOffset.value ? `translateY(-${floatOffset.value}px)` : '',
+  transition: 'transform 0.3s ease-out',
+}));
+
+const resetWayStyle = computed(() => ({
+  transform: floatOffset.value
+    ? `translateX(-50%) translateY(-${floatOffset.value}px)`
+    : 'translateX(-50%)',
+  transition: 'transform 0.3s ease-out',
+}));
 
 const isZoomInDisabled = computed(
   () => mapRef.value?.isZoomInDisabled ?? false,
@@ -22,8 +46,11 @@ const isZoomOutDisabled = computed(
   () => mapRef.value?.isZoomOutDisabled ?? true,
 );
 
+const hasRoute = computed(() => mapRef.value?.hasRoute ?? false);
+
 const zoomIn = () => mapRef.value?.zoomIn();
 const zoomOut = () => mapRef.value?.zoomOut();
+const resetRoute = () => mapRef.value?.resetRoute();
 
 const zonesData = ref<Record<string, ZoneData>>({});
 const activeZone = ref<ZoneData | null>(null);
@@ -46,10 +73,11 @@ const closeModal = () => {
 };
 
 const handleBuildRoute = () => {
-  if (activeZoneId.value) {
-    mapRef.value?.buildRouteTo(activeZoneId.value);
-  }
+  const zoneId = activeZoneId.value;
   closeModal();
+  if (zoneId) {
+    setTimeout(() => mapRef.value?.buildRouteTo(zoneId), 300);
+  }
 };
 </script>
 
@@ -85,19 +113,10 @@ const handleBuildRoute = () => {
       ></div>
 
       <div class="bottom-area">
-        <div class="controls">
-          <button
-            type="button"
-            class="control-button"
-            :disabled="isZoomInDisabled"
-            @click="zoomIn"
-          >
-            <img
-              src="/images/plus.svg"
-              alt=""
-            />
-          </button>
-
+        <div
+          class="controls"
+          :style="floatStyle"
+        >
           <button
             type="button"
             class="control-button"
@@ -109,9 +128,62 @@ const handleBuildRoute = () => {
               alt=""
             />
           </button>
+
+          <button
+            type="button"
+            class="control-button"
+            :disabled="isZoomInDisabled"
+            @click="zoomIn"
+          >
+            <img
+              src="/images/plus.svg"
+              alt=""
+            />
+          </button>
         </div>
 
-        <Legend class="legend" />
+        <Transition name="reset-way-anim">
+          <button
+            v-if="hasRoute"
+            class="reset-way"
+            :style="resetWayStyle"
+            @click="resetRoute"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 14 14"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <g clip-path="url(#clip0_98_2141)">
+                <path
+                  d="M3.00003 2.99997L11.0001 11M3.00003 11L11.0001 2.99997"
+                  stroke="white"
+                  stroke-width="1.61626"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </g>
+              <defs>
+                <clipPath id="clip0_98_2141">
+                  <rect
+                    width="14"
+                    height="14"
+                    fill="white"
+                  />
+                </clipPath>
+              </defs>
+            </svg>
+            <span> Сбросить маршрут </span>
+          </button>
+        </Transition>
+
+        <Legend
+          ref="legendComp"
+          v-model="legendOpen"
+          class="legend"
+        />
       </div>
     </div>
   </div>
@@ -121,10 +193,6 @@ const handleBuildRoute = () => {
 .page {
   inline-size: 100%;
   block-size: 100dvh;
-  background-image: url('/images/pattern.svg');
-  background-repeat: repeat;
-  background-position: center;
-  background-size: 400px;
   user-select: none;
   -webkit-user-select: none;
 }
@@ -141,7 +209,7 @@ const handleBuildRoute = () => {
   display: flex;
   justify-content: flex-end;
   padding-top: 20px;
-  padding-inline: 16px;
+  padding-inline: 20px;
   pointer-events: auto;
 }
 .logo {
@@ -169,10 +237,9 @@ const handleBuildRoute = () => {
 .controls {
   position: absolute;
   right: 16px;
-  bottom: calc(100% + 6px);
+  bottom: calc(100% + 10px);
   display: flex;
-  flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   pointer-events: auto;
 }
 .control-button {
@@ -199,5 +266,37 @@ const handleBuildRoute = () => {
 .legend {
   width: 100%;
   pointer-events: auto;
+}
+
+.reset-way {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  border-radius: 12px;
+  padding: 10px;
+  background: #91b341;
+  font-weight: 600;
+  font-size: 12px;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+  touch-action: manipulation;
+  white-space: nowrap;
+}
+
+.reset-way-anim-enter-active,
+.reset-way-anim-leave-active {
+  transition:
+    opacity 0.3s ease,
+    transform 0.3s ease;
+}
+
+.reset-way-anim-enter-from,
+.reset-way-anim-leave-to {
+  opacity: 0;
+  transform: translateX(-50%) translateY(12px);
 }
 </style>
