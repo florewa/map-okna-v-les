@@ -801,6 +801,8 @@ watch(
 onMounted(async () => {
   await fitMap();
   window.addEventListener('resize', fitMap);
+  window.addEventListener('keydown', onKeyDown);
+  window.addEventListener('keyup', onKeyUp);
 
   const params = new URLSearchParams(window.location.search);
   const zoneId = params.get('zone');
@@ -820,6 +822,8 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', fitMap);
+  window.removeEventListener('keydown', onKeyDown);
+  window.removeEventListener('keyup', onKeyUp);
   resizeObserver?.disconnect();
 
   const el = wrapperRef.value;
@@ -843,6 +847,43 @@ const logCoords = (e: MouseEvent) => {
     `x: ${Math.round(cursorPoint.x)}, y: ${Math.round(cursorPoint.y)}`,
   );
 };
+
+const isCtrlHeld = ref(false);
+
+const onKeyDown = (e: KeyboardEvent) => {
+  if (e.key === 'Control') isCtrlHeld.value = true;
+};
+
+const onKeyUp = (e: KeyboardEvent) => {
+  if (e.key === 'Control') isCtrlHeld.value = false;
+};
+
+// Пин: SVG 60×34, круг на cy=28; с translate(-50%,-100%) низ пина = userLocation.y,
+// значит круг рендерится на userLocation.y - (34 - 28) = userLocation.y - 6
+const PIN_CIRCLE_OFFSET_Y = 34 - 28; // 6 map-units
+
+const handleCtrlClick = (e: MouseEvent) => {
+  if (!e.ctrlKey) return;
+
+  e.stopPropagation();
+
+  const svgX =
+    Math.round(((e.clientX - translateX.value) / scale.value) * 10) / 10;
+  const svgY =
+    Math.round(
+      ((e.clientY - translateY.value) / scale.value + PIN_CIRCLE_OFFSET_Y) * 10,
+    ) / 10;
+
+  userLocation.value = { x: svgX, y: svgY };
+
+  const params = new URLSearchParams(window.location.search);
+  params.set('x', String(svgX));
+  params.set('y', String(svgY));
+  history.replaceState(null, '', `?${params.toString()}`);
+
+  const shareUrl = `https://map-okna-v-les.vercel.app/?x=${svgX}&y=${svgY}`;
+  navigator.clipboard.writeText(shareUrl).catch(() => {});
+};
 </script>
 
 <template>
@@ -850,7 +891,8 @@ const logCoords = (e: MouseEvent) => {
     <div
       ref="wrapperRef"
       class="map-canvas"
-      :class="{ 'is-dragging': isDragging }"
+      :class="{ 'is-dragging': isDragging, 'is-ctrl': isCtrlHeld }"
+      @click.capture="handleCtrlClick"
     >
       <div
         class="map"
@@ -931,6 +973,10 @@ $map-height: 419px;
 
   &.is-dragging {
     cursor: grabbing;
+  }
+
+  &.is-ctrl {
+    cursor: crosshair;
   }
 }
 
