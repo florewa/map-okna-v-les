@@ -52,6 +52,7 @@ watch(
         :animate="{ opacity: 1 }"
         :exit="{ opacity: 0 }"
         :transition="{ duration: 0.2 }"
+        @click.self="emit('close')"
       >
         <div class="modal">
           <div class="modal__gallery">
@@ -156,6 +157,8 @@ watch(
 </template>
 
 <style scoped lang="scss">
+$modal-desktop: 900px;
+
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -164,6 +167,14 @@ watch(
   align-items: stretch;
   justify-content: stretch;
   padding: 16px;
+  background: rgba(20, 24, 12, 0.55);
+  backdrop-filter: blur(4px);
+
+  @media (min-width: $modal-desktop) {
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+  }
 }
 
 .modal {
@@ -175,6 +186,13 @@ watch(
   display: flex;
   flex-direction: column;
 
+  @media (min-width: $modal-desktop) {
+    flex: 0 1 auto;
+    width: 100%;
+    max-width: 620px;
+    max-height: calc(100vh - 80px);
+  }
+
   &__gallery {
     flex-shrink: 0;
     padding-bottom: 12px;
@@ -185,6 +203,10 @@ watch(
     height: 240px;
     overflow: hidden;
     border-radius: 12px;
+
+    @media (min-width: $modal-desktop) {
+      height: 380px;
+    }
   }
 
   &__main-image {
@@ -292,6 +314,13 @@ watch(
     font-weight: 500;
     font-size: 12px;
     color: #2b2a22;
+
+    @media (min-width: $modal-desktop) {
+      max-width: 560px;
+      margin: 0 auto;
+      font-size: 14px;
+      line-height: 1.5;
+    }
   }
 
   &__footer {
@@ -299,6 +328,12 @@ watch(
     display: flex;
     gap: 12px;
     padding: 12px 16px 16px;
+
+    @media (min-width: $modal-desktop) {
+      width: 100%;
+      max-width: 420px;
+      margin: 0 auto;
+    }
   }
 
   &__btn {
