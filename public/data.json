@@ -148,16 +148,16 @@
     "zone-terrace": {
       "title": "Терраса",
       "description": "Летняя веранда — свежий воздух, восхитительные виды и изысканное меню. Уютная площадка для тёплого сезона вмещает до 50 человек. Современное освещение, встроенная музыкальная система и зона для выездной регистрации делают её идеальным местом для свадеб и концертов под открытым небом. Здесь же — кресла, столы и гамаки для неспешного уик-энда наедине с природой.",
-      "images": ["/images/zones/terrasa.webp"]
+      "images": [
+        "/images/zones/sport.webp",
+        "/images/zones/terrasa.webp",
+        "/images/zones/sport_1.webp"
+      ]
     },
     "zone-sport": {
       "title": "Спортивная площадка",
       "description": "Спортивная площадка для активного отдыха на свежем воздухе. Отличная возможность размяться и провести время в движении среди леса — для гостей любого возраста, в компании близких или всей семьёй.",
-      "images": [
-        "/images/zones/sport.webp",
-        "/images/zones/sport_1.webp",
-        "/images/zones/sport_2.webp"
-      ]
+      "images": ["/images/zones/sport_2.webp"]
     },
     "zone-playground": {
       "title": "Детская площадка",
@@ -166,8 +166,7 @@
         "/images/zones/child.webp",
         "/images/zones/child_1.webp",
         "/images/zones/child_2.webp",
-        "/images/zones/child_3.webp",
-        "/images/zones/child_4.webp"
+        "/images/zones/child_3.webp"
       ]
     },
     "zone-reception": {
